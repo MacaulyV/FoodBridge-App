@@ -1,3 +1,5 @@
+![Descrição banner](https://github.com/user-attachments/assets/eee53994-1651-4d35-9131-880c091791f8)
+
 # 🍽️ FoodBridge
 
  Conectando doadores a quem precisa de alimentos — simples, gratuito e solidário.
