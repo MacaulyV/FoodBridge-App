@@ -1,6 +1,6 @@
 # 🍽️ FoodBridge
 
-> Conectando doadores a quem precisa de alimentos — simples, gratuito e solidário.
+ Conectando doadores a quem precisa de alimentos — simples, gratuito e solidário.
 > 
 
 ---
