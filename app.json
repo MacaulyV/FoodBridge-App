@@ -1,8 +1,9 @@
 {
   "expo": {
     "name": "FoodBridge",
-    "slug": "FoodBridge",
+    "slug": "foodbridge",
     "version": "1.0.0",
+    "sdkVersion": "48.0.0",
     "orientation": "portrait",
     "icon": "./assets/icons/Logo-Vazio.png",
     "userInterfaceStyle": "dark",
@@ -11,9 +12,36 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "platforms": [
+      "android",
+      "ios",
+      "web"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2ce61972-21b1-402c-9b1d-74edf521b0f6"
+      }
+    },
+    "android": {
+      "package": "com.macaulytk.foodbridge",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icons/Logo-Vazio.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
     "ios": {
+      "bundleIdentifier": "com.macaulytk.foodbridge",
       "supportsTablet": true
     },
-    "newArchEnabled": true
+    "web": {
+      "favicon": "./assets/icons/favicon.png"
+    }
   }
 }
