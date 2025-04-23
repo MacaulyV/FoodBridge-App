@@ -1,0 +1,600 @@
+openapi: 3.0.0
+info:
+  title: FoodBridge API
+  version: "1.0.0"
+  description: |
+    API REST para o app **FoodBridge**  
+    Gerencia usuários e doações de alimentos sem autenticação de token.  
+    Documentação completa de todos os endpoints.
+
+servers:
+  - url: http://localhost:{porta}
+    description: Servidor local
+    variables:
+      porta:
+        default: 3000
+
+tags:
+  - name: Autenticação
+    description: Endpoints de login de usuários
+  - name: Usuários
+    description: CRUD e ficha completa de usuários
+  - name: Doações
+    description: CRUD de doações de alimentos
+
+paths:
+  /users:
+    post:
+      tags:
+        - Usuários
+      summary: Cadastrar novo usuário
+      description: Cria um usuário no sistema com dados pessoais.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+            examples:
+              exemploCadastro:
+                summary: Cadastro de João Silva
+                value:
+                  nome: "João Silva"
+                  email: "joao@exemplo.com"
+                  senha: "senhaSegura"
+                  tipo: "Pessoa Física"
+                  bairro_ou_distrito: "Vila Mariana"
+                  cidade: "São Paulo"
+      responses:
+        '201':
+          $ref: '#/components/responses/UserCriado'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+
+  /users/login:
+    post:
+      tags:
+        - Autenticação
+      summary: Autenticar usuário
+      description: Verifica email e senha e retorna mensagem de sucesso com dados do usuário.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+            examples:
+              exemploLogin:
+                summary: Login de João
+                value:
+                  email: "joao@exemplo.com"
+                  senha: "senhaSegura"
+      responses:
+        '200':
+          $ref: '#/components/responses/LoginSucesso'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{id}:
+    parameters:
+      - $ref: '#/components/parameters/paramId'
+    get:
+      tags:
+        - Usuários
+      summary: Obter usuário por ID
+      description: Retorna dados básicos do usuário.
+      responses:
+        '200':
+          $ref: '#/components/responses/UserEncontrado'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - Usuários
+      summary: Atualizar dados do usuário
+      description: Atualiza todos os campos pessoais do usuário (opcionalmente atualiza senha).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+            examples:
+              exemploAtualiza:
+                summary: Atualiza cidade do usuário
+                value:
+                  nome: "João Silva"
+                  email: "joao@exemplo.com"
+                  senha: "novaSenha123"
+                  tipo: "Pessoa Física"
+                  bairro_ou_distrito: "Pinheiros"
+                  cidade: "São Paulo"
+      responses:
+        '200':
+          $ref: '#/components/responses/UserAtualizado'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Usuários
+      summary: Excluir usuário
+      description: Remove completamente o usuário do sistema.
+      responses:
+        '200':
+          $ref: '#/components/responses/UserDeletado'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /users/{id}/completo:
+    get:
+      tags:
+        - Usuários
+      summary: Ficha completa do usuário
+      description: Retorna dados pessoais do usuário e todas as doações que ele cadastrou.
+      parameters:
+        - $ref: '#/components/parameters/paramId'
+      responses:
+        '200':
+          description: Objeto com usuário e lista de doações
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usuario:
+                    $ref: '#/components/schemas/User'
+                  doacoes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Donation'
+              examples:
+                fichaExemplo:
+                  summary: Ficha de João com duas doações
+                  value:
+                    usuario:
+                      id: "123456"
+                      nome: "João Silva"
+                      email: "joao@exemplo.com"
+                      tipo: "Pessoa Física"
+                      bairro_ou_distrito: "Vila Mariana"
+                      cidade: "São Paulo"
+                    doacoes:
+                      - id: "300001"
+                        nome_alimento: "Pão Francês"
+                        validade: "2025-04-30"
+                        descricao: "Pacote com 10 pães"
+                        bairro_ou_distrito: "Vila Mariana"
+                        horario_preferido: "Manhã"
+                        termos: "Sim"
+                        user_id: "123456"
+                        imagens_urls:
+                          - "http://localhost:3000/uploads/pao1.jpg"
+                          - "http://localhost:3000/uploads/pao2.jpg"
+                      - id: "300002"
+                        nome_alimento: "Frutas"
+                        validade: "2025-05-05"
+                        descricao: "Bananas e maçãs"
+                        bairro_ou_distrito: "Vila Mariana"
+                        horario_preferido: "Tarde"
+                        termos: "Sim"
+                        user_id: "123456"
+                        imagens_urls:
+                          - "http://localhost:3000/uploads/fruta1.jpg"
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /donations:
+    post:
+      tags:
+        - Doações
+      summary: Criar nova doação
+      description: Recebe multipart/form-data com dados da doação e imagens.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DonationCreate'
+            encoding:
+              imagens:
+                style: form
+                explode: true
+      responses:
+        '201':
+          $ref: '#/components/responses/DonationCriada'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+    get:
+      tags:
+        - Doações
+      summary: Listar todas as doações
+      description: Retorna array de todas as doações públicas.
+      responses:
+        '200':
+          description: Lista de doações
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Donation'
+
+  /donations/{id}:
+    parameters:
+      - $ref: '#/components/parameters/paramId'
+    get:
+      tags:
+        - Doações
+      summary: Obter doação por ID
+      description: Retorna detalhes completos de uma doação.
+      responses:
+        '200':
+          $ref: '#/components/responses/DonationEncontrada'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+        - Doações
+      summary: Atualizar doação existente
+      description: Atualiza todos os campos permitidos de uma doação. Aceita envio de arquivos.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DonationUpdate'
+            encoding:
+              imagens:
+                style: form
+                explode: true
+            examples:
+              exemploSubstituirTudo:
+                summary: Substituir todas as imagens
+                value:
+                  nome_alimento: "Pão Francês"
+                  validade: "2025-04-30"
+                  descricao: "Pacote com 12 pães"
+                  bairro_ou_distrito: "Vila Mariana"
+                  horario_preferido: "Manhã"
+                  termos: "Sim"
+              exemploManterEspecificos:
+                summary: Manter imagens específicas + novas
+                value:
+                  nome_alimento: "Pão Francês"
+                  validade: "2025-04-30"
+                  descricao: "Pacote com 12 pães"
+                  bairro_ou_distrito: "Vila Mariana"
+                  horario_preferido: "Manhã"
+                  termos: "Sim"
+                  imagens_manter: "imagem1.jpg,imagem2.jpg"
+      responses:
+        '200':
+          $ref: '#/components/responses/DonationAtualizada'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - Doações
+      summary: Excluir doação
+      description: Remove doação e imagens associadas.
+      responses:
+        '200':
+          $ref: '#/components/responses/DonationDeletada'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /donations/{id}/gallery:
+    parameters:
+      - $ref: '#/components/parameters/paramId'
+    get:
+      tags:
+        - Doações
+      summary: Galeria de imagens da doação
+      description: Retorna mini‑HTML com todas as imagens da doação.
+      responses:
+        '200':
+          description: Página HTML com `<img>` de cada arquivo.
+          content:
+            text/html:
+              schema:
+                type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /donations/user/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: '^\d{6}$'
+        description: ID de 6 dígitos do usuário
+    get:
+      tags:
+        - Doações
+      summary: Listar doações por usuário
+      description: Retorna todas as doações relacionadas a um usuário específico.
+      responses:
+        '200':
+          description: Lista de doações do usuário
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Donation'
+              examples:
+                doacoesExemplo:
+                  summary: Doações de um usuário
+                  value:
+                    - id: "300001"
+                      nome_alimento: "Pão Francês"
+                      validade: "2025-04-30"
+                      descricao: "Pacote com 10 pães"
+                      bairro_ou_distrito: "Vila Mariana"
+                      horario_preferido: "Manhã"
+                      termos: "Sim"
+                      user_id: "123456"
+                      imagens_urls:
+                        - "http://localhost:3000/uploads/pao1.jpg"
+                        - "http://localhost:3000/uploads/pao2.jpg"
+                    - id: "300002"
+                      nome_alimento: "Frutas"
+                      validade: "2025-05-05"
+                      descricao: "Bananas e maçãs"
+                      bairro_ou_distrito: "Vila Mariana"
+                      horario_preferido: "Tarde"
+                      termos: "Sim"
+                      user_id: "123456"
+                      imagens_urls:
+                        - "http://localhost:3000/uploads/fruta1.jpg"
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  parameters:
+    paramId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^\d{6}$'
+      description: ID de 6 dígitos do recurso
+
+  schemas:
+    UserCreate:
+      type: object
+      required:
+        - nome
+        - email
+        - senha
+        - tipo
+        - bairro_ou_distrito
+        - cidade
+      properties:
+        nome:
+          type: string
+        email:
+          type: string
+          format: email
+        senha:
+          type: string
+          minLength: 6
+        tipo:
+          type: string
+          enum:
+            - Pessoa Física
+            - ONG
+            - Pessoa Jurídica
+        bairro_ou_distrito:
+          type: string
+        cidade:
+          type: string
+
+    User:
+      allOf:
+        - $ref: '#/components/schemas/UserCreate'
+        - type: object
+          properties:
+            id:
+              type: string
+              pattern: '^\d{6}$'
+
+    UserLogin:
+      type: object
+      required:
+        - email
+        - senha
+      properties:
+        email:
+          type: string
+          format: email
+        senha:
+          type: string
+
+    DonationCreate:
+      type: object
+      required:
+        - nome_alimento
+        - validade
+        - bairro_ou_distrito
+        - termos
+        - user_id
+      properties:
+        nome_alimento:
+          type: string
+        validade:
+          type: string
+          format: date
+        descricao:
+          type: string
+        bairro_ou_distrito:
+          type: string
+        horario_preferido:
+          type: string
+        termos:
+          type: string
+          enum:
+            - Sim
+        user_id:
+          type: string
+          pattern: '^\d{6}$'
+        imagens:
+          type: array
+          items:
+            type: string
+            format: binary
+
+    Donation:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: '^\d{6}$'
+        nome_alimento:
+          type: string
+        validade:
+          type: string
+          format: date
+        descricao:
+          type: string
+        bairro_ou_distrito:
+          type: string
+        horario_preferido:
+          type: string
+        termos:
+          type: string
+        user_id:
+          type: string
+        imagens_urls:
+          type: array
+          items:
+            type: string
+
+    DonationUpdate:
+      type: object
+      required:
+        - nome_alimento
+        - validade
+        - bairro_ou_distrito
+        - termos
+      properties:
+        nome_alimento:
+          type: string
+        validade:
+          type: string
+          format: date
+        descricao:
+          type: string
+        bairro_ou_distrito:
+          type: string
+        horario_preferido:
+          type: string
+        termos:
+          type: string
+          enum:
+            - Sim
+        imagens:
+          type: array
+          items:
+            type: string
+            format: binary
+          description: "Novas imagens para upload"
+        imagens_manter:
+          type: string
+          description: "Lista de nomes de arquivos separados por vírgula que devem ser mantidos. Exemplo: 'img1.jpg,img2.jpg'. Se não for fornecido, todas as imagens antigas serão removidas"
+
+    Error:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
+
+  responses:
+    UserCriado:
+      description: Usuário criado com sucesso
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+    LoginSucesso:
+      description: Login bem‑sucedido
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              user:
+                $ref: '#/components/schemas/User'
+    UserEncontrado:
+      description: Dados do usuário
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+    UserAtualizado:
+      description: Usuário atualizado com sucesso
+    UserDeletado:
+      description: Usuário deletado com sucesso
+    DonationCriada:
+      description: Doação criada com sucesso
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+    DonationEncontrada:
+      description: Detalhes da doação
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Donation'
+    DonationAtualizada:
+      description: Doação atualizada com sucesso
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              imagens_atualizadas:
+                type: array
+                items:
+                  type: string
+          examples:
+            exemploRespostaAtualizacao:
+              summary: Resposta após atualização da doação
+              value:
+                message: "Doação atualizada"
+                imagens_atualizadas: ["imagem1.jpg", "imagem3.jpg", "nova_imagem.jpg"]
+    DonationDeletada:
+      description: Doação excluída com sucesso
+    RequisicaoInvalida:
+      description: Requisição inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Credenciais inválidas
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
