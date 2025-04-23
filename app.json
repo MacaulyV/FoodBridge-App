@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "FoodBridge",
-    "slug": "foodbridge",
+    "slug": "FoodBridge",
     "version": "1.0.0",
     "sdkVersion": "48.0.0",
     "orientation": "portrait",
@@ -38,6 +38,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.macaulytk.foodbridge",
+      "buildNumber": "1.0.0",
       "supportsTablet": true
     },
     "web": {
