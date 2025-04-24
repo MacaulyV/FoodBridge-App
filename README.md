@@ -151,8 +151,8 @@ cd foodbridge
 # 2. Instale dependências
 npm install
 
-# 3. Crie um arquivo .env
-API_URL=https://foodbridge-api.fly.dev
+# 3. Chame o emulador
+emulator -avd Pixel_4_API_35  
 
 # 4. Rode o projeto
 npx expo start        # Pressione "a" para Android ou "i" para iOS
